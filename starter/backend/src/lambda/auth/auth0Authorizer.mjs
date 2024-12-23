@@ -6,6 +6,8 @@ const logger = createLogger('auth')
 
 const jwksUrl = 'https://test-endpoint.auth0.com/.well-known/jwks.json'
 
+const certificate = ``
+
 export async function handler(event) {
   try {
     const jwtToken = await verifyToken(event.authorizationToken)
@@ -47,7 +49,7 @@ async function verifyToken(authHeader) {
   const jwt = jsonwebtoken.decode(token, { complete: true })
 
   // TODO: Implement token verification
-  return undefined;
+  return jsonwebtoken.verify(token, certificate, { algorithms: ['RS256'] })
 }
 
 function getToken(authHeader) {
