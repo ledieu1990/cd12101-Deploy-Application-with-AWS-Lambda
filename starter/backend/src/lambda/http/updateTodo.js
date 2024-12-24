@@ -1,18 +1,11 @@
-import { DynamoDB } from '@aws-sdk/client-dynamodb'
-import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb'
 import middy from '@middy/core'
 import cors from '@middy/http-cors'
 import httpErrorHandler from '@middy/http-error-handler'
-import AWSXRay from 'aws-xray-sdk-core'
 import { getUserId } from '../utils.mjs'
 import { createLogger } from '../../utils/logger.mjs'
+import { updateTodo } from '../../businessLogic/todo.mjs'
 
 const logger = createLogger('UpdateToDo')
-
-const dynamoDb = AWSXRay.captureAWSv3Client(new DynamoDB())
-const dynamoDbClient = DynamoDBDocument.from(dynamoDb)
-
-const todosTable = process.env.TODOS_TABLE
 
 export const handler = middy()
   .use(httpErrorHandler())
@@ -37,25 +30,7 @@ export const handler = middy()
       }
     }
 
-    await dynamoDbClient.update({
-      TableName: todosTable,
-      Key: {
-        userId: userId,
-        todoId: todoId
-      },
-      UpdateExpression:
-        'SET #name = :newName, #dueDate = :newDueDate, #done = :newStatus',
-      ExpressionAttributeNames: {
-        '#name': 'name',
-        '#dueDate': 'dueDate',
-        '#done': 'done'
-      },
-      ExpressionAttributeValues: {
-        ':newName': updatedTodo.name,
-        ':newDueDate': updatedTodo.dueDate,
-        ':newStatus': updatedTodo.done
-      }
-    })
+    await updateTodo(userId, todoId, updatedTodo)
 
     return {
       statusCode: 201,

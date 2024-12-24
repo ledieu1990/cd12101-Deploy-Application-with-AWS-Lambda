@@ -1,18 +1,11 @@
-import { DynamoDB } from '@aws-sdk/client-dynamodb'
-import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb'
 import middy from '@middy/core'
 import cors from '@middy/http-cors'
 import httpErrorHandler from '@middy/http-error-handler'
-import AWSXRay from 'aws-xray-sdk-core'
 import { getUserId } from '../utils.mjs'
 import { createLogger } from '../../utils/logger.mjs'
+import { deleteTodo } from '../../businessLogic/todo.mjs'
 
 const logger = createLogger('DeleteToDo')
-
-const dynamoDb = AWSXRay.captureAWSv3Client(new DynamoDB())
-const dynamoDbClient = DynamoDBDocument.from(dynamoDb)
-
-const todosTable = process.env.TODOS_TABLE
 
 export const handler = middy()
   .use(httpErrorHandler())
@@ -36,13 +29,7 @@ export const handler = middy()
       }
     }
 
-    await dynamoDbClient.delete({
-      TableName: todosTable,
-      Key: {
-        userId: userId,
-        todoId: todoId
-      }
-    })
+    await deleteTodo(userId, todoId)
 
     return {
       statusCode: 201,
