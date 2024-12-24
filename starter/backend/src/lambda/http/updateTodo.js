@@ -30,11 +30,11 @@ export const handler = middy()
       }
     }
 
-    await updateTodo(userId, todoId, updatedTodo)
+    const updatedItem = await updateTodo(userId, todoId, updatedTodo)
 
     return {
       statusCode: 201,
-      body: JSON.stringify({})
+      body: JSON.stringify({ updatedItem })
     }
   })
 

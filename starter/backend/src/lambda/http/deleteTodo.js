@@ -29,11 +29,11 @@ export const handler = middy()
       }
     }
 
-    await deleteTodo(userId, todoId)
+    const deletedItem = await deleteTodo(userId, todoId)
 
     return {
       statusCode: 201,
-      body: JSON.stringify({})
+      body: JSON.stringify({ deletedItem })
     }
   })
 
