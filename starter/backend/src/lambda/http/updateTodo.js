@@ -21,6 +21,16 @@ export const handler = middy()
     const userId = getUserId(event)
     const todoId = event.pathParameters.todoId
     const updatedTodo = JSON.parse(event.body)
+    const validtodoId = await todoIdExists(todoId, userId)
+
+    if (!validtodoId) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({
+          error: 'Todo item does not exist'
+        })
+      }
+    }
 
     await dynamoDbClient.update({
       TableName: todosTable,
@@ -47,3 +57,16 @@ export const handler = middy()
       body: JSON.stringify({})
     }
   })
+
+async function todoIdExists(todoId, userId) {
+  const result = await dynamoDbClient.get({
+    TableName: todosTable,
+    Key: {
+      userId: userId,
+      todoId: todoId
+    }
+  })
+
+  console.log('Get Todo item: ', result)
+  return !!result.Item
+}

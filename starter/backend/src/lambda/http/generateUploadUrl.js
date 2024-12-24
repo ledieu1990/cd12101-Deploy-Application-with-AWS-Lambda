@@ -14,7 +14,6 @@ const dynamoDbClient = DynamoDBDocument.from(dynamoDb)
 const s3Client = new S3Client()
 
 const todosTable = process.env.TODOS_TABLE
-const imagesTable = process.env.IMAGES_TABLE
 const bucketName = process.env.IMAGES_S3_BUCKET
 const urlExpiration = parseInt(process.env.SIGNED_URL_EXPIRATION)
 
@@ -41,9 +40,23 @@ export const handler = middy()
     }
 
     const imageId = uuidv4()
-    const newItem = await createImage(todoId, imageId, event)
 
     const url = await getUploadUrl(imageId)
+
+    await dynamoDbClient.update({
+      TableName: todosTable,
+      Key: {
+        userId: userId,
+        todoId: todoId
+      },
+      UpdateExpression: 'SET #attachmentUrl = :newAttachmentUrl',
+      ExpressionAttributeNames: {
+        '#attachmentUrl': 'attachmentUrl'
+      },
+      ExpressionAttributeValues: {
+        ':newAttachmentUrl': url
+      }
+    })
 
     return {
       statusCode: 201,
@@ -64,27 +77,6 @@ async function todoIdExists(todoId, userId) {
 
   console.log('Get Todo item: ', result)
   return !!result.Item
-}
-
-async function createImage(todoId, imageId, event) {
-  const timestamp = new Date().toISOString()
-  const newImage = JSON.parse(event.body)
-
-  const newItem = {
-    todoId,
-    createdAt,
-    imageId,
-    imageUrl: `https://${bucketName}.s3.amazonaws.com/${imageId}`,
-    ...newImage
-  }
-  console.log('Storing new item: ', newItem)
-
-  await dynamoDbClient.put({
-    TableName: imagesTable,
-    Item: newItem
-  })
-
-  return newItem
 }
 
 async function getUploadUrl(imageId) {

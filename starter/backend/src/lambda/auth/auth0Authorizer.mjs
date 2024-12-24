@@ -6,7 +6,13 @@ const logger = createLogger('auth')
 
 const jwksUrl = 'https://test-endpoint.auth0.com/.well-known/jwks.json'
 
-const certificate = ``
+Axios.get(jwksUrl)
+  .then((response) => {
+    const jwks = response.data.keys
+  })
+  .catch((error) => {
+    console.error('Error fetching JWKS:', error)
+  })
 
 export async function handler(event) {
   try {
@@ -47,9 +53,14 @@ export async function handler(event) {
 async function verifyToken(authHeader) {
   const token = getToken(authHeader)
   const jwt = jsonwebtoken.decode(token, { complete: true })
+  const key = jwks.find((k) => k.id === jwt)
 
-  // TODO: Implement token verification
-  return jsonwebtoken.verify(token, certificate, { algorithms: ['RS256'] })
+  if (key) {
+    const publicKey = `-----BEGIN PUBLIC KEY-----\n${key.n}\n${key.e}\n-----END PUBLIC KEY-----`
+    return jsonwebtoken.verify(token, publicKey, { algorithms: ['RS256'] })
+  } else {
+    console.error('No matching key is found for the provided token.')
+  }
 }
 
 function getToken(authHeader) {

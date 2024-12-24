@@ -26,6 +26,7 @@ export const handler = middy()
     const newItem = {
       todoId: todoId,
       userId: userId,
+      attachmentUrl: '',
       dueDate: newTodo.dueDate,
       createdAt: createdAt,
       name: newTodo.name,
