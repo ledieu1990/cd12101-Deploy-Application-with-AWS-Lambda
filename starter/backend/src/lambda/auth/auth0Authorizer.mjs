@@ -11,12 +11,14 @@ Axios.get(jwksUrl)
     const jwks = response.data.keys
   })
   .catch((error) => {
-    console.error('Error fetching JWKS:', error)
+    logger.error('Error fetching JWKS:', { error: error })
   })
 
 export async function handler(event) {
   try {
     const jwtToken = await verifyToken(event.authorizationToken)
+
+    logger.info('User was authorized', { key: jwtToken.sub })
 
     return {
       principalId: jwtToken.sub,
@@ -59,7 +61,7 @@ async function verifyToken(authHeader) {
     const publicKey = `-----BEGIN PUBLIC KEY-----\n${key.n}\n${key.e}\n-----END PUBLIC KEY-----`
     return jsonwebtoken.verify(token, publicKey, { algorithms: ['RS256'] })
   } else {
-    console.error('No matching key is found for the provided token.')
+    logger.error('No matching key is found for the provided token.')
   }
 }
 
