@@ -14,7 +14,7 @@ export class TodoActions {
 
   async getToDoList(userId) {
     console.log('Getting all TODO items')
-    const result = await dynamoDbClient.query({
+    const result = await this.dynamoDbClient.query({
       TableName: this.todosTable,
       KeyConditionExpression: 'userId = :userId',
       ExpressionAttributeValues: {
@@ -28,7 +28,7 @@ export class TodoActions {
 
   async createTodo(newItem) {
     console.log(`Creating a TODO item with id ${newItem.todoId}`)
-    await dynamoDbClient.put({
+    await this.dynamoDbClient.put({
       TableName: this.todosTable,
       Item: newItem
     })
@@ -38,7 +38,7 @@ export class TodoActions {
 
   async updateTodo(userId, todoId, updatedTodo) {
     console.log(`Updating a TODO item with id ${todoId}`)
-    await dynamoDbClient.update({
+    await this.dynamoDbClient.update({
       TableName: this.todosTable,
       Key: {
         userId: userId,
@@ -63,7 +63,7 @@ export class TodoActions {
 
   async deleteTodo(userId, todoId) {
     console.log(`Deleting a TODO item with id ${todoId}`)
-    await dynamoDbClient.delete({
+    await this.dynamoDbClient.delete({
       TableName: this.todosTable,
       Key: {
         userId: userId,
@@ -72,5 +72,17 @@ export class TodoActions {
     })
 
     return ''
+  }
+
+  async todoIdExists(todoId, userId) {
+    const result = await this.dynamoDbClient.get({
+      TableName: this.todosTable,
+      Key: {
+        userId: userId,
+        todoId: todoId
+      }
+    })
+
+    return !!result.Item
   }
 }

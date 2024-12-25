@@ -3,7 +3,7 @@ import cors from '@middy/http-cors'
 import httpErrorHandler from '@middy/http-error-handler'
 import { getUserId } from '../utils.mjs'
 import { createLogger } from '../../utils/logger.mjs'
-import { deleteTodo } from '../../businessLogic/todo.mjs'
+import { deleteTodo, todoIdExists } from '../../businessLogic/todo.mjs'
 
 const logger = createLogger('DeleteToDo')
 
@@ -43,16 +43,3 @@ export const handler = middy()
       body: JSON.stringify({ deletedItem })
     }
   })
-
-async function todoIdExists(todoId, userId) {
-  const result = await dynamoDbClient.get({
-    TableName: todosTable,
-    Key: {
-      userId: userId,
-      todoId: todoId
-    }
-  })
-
-  logger.info('Get Todo item: ', { result: result })
-  return !!result.Item
-}

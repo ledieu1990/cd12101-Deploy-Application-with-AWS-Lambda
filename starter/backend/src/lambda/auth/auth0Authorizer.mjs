@@ -48,8 +48,8 @@ export async function handler(event) {
 async function verifyToken(authHeader) {
   const token = getToken(authHeader)
   const jwt = jsonwebtoken.decode(token, { complete: true })
-  const jwks = await Axios.get(jwksUrl).data.keys
-  const key = jwks.find((k) => k.kid === jwt.header.kid)
+  const res = await Axios.get(jwksUrl)
+  const key = res.data.keys.find((k) => k.kid === jwt.header.kid)
 
   if (key) {
     const certificate = `-----BEGIN CERTIFICATE-----\n${key.x5c[0]}\n-----END CERTIFICATE-----\n`
