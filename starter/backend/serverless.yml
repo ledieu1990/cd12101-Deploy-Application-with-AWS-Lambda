@@ -3,11 +3,11 @@ service: serverless-todo-app
 plugins:
   - serverless-iam-roles-per-function
 
-frameworkVersion: '3'
+frameworkVersion: '4.4.13'
 
 provider:
   name: aws
-  runtime: nodejs14.x
+  runtime: nodejs18.x
   tracing:
     lambda: true
     apiGateway: true
@@ -176,20 +176,12 @@ resources:
       Type: AWS::DynamoDB::Table
       Properties:
         AttributeDefinitions:
-          - AttributeName: todoId
-            AttributeType: S
           - AttributeName: userId
             AttributeType: S
-          - AttributeName: attachmentUrl
-            AttributeType: S
-          - AttributeName: dueDate
+          - AttributeName: todoId
             AttributeType: S
           - AttributeName: createdAt
             AttributeType: S
-          - AttributeName: name
-            AttributeType: S
-          - AttributeName: done
-            AttributeType: BOOL
         KeySchema:
           - AttributeName: userId
             KeyType: HASH
@@ -211,6 +203,9 @@ resources:
       Type: AWS::S3::Bucket
       Properties:
         BucketName: ${self:provider.environment.IMAGES_S3_BUCKET}
+        PublicAccessBlockConfiguration:
+          BlockPublicPolicy: false
+          RestrictPublicBuckets: false
         CorsConfiguration:
           CorsRules:
             - AllowedOrigins:
