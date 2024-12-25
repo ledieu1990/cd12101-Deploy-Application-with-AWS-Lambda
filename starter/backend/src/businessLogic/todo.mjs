@@ -14,7 +14,7 @@ export async function createTodo(createTodoRequest, userId) {
   return await todoActions.createTodo({
     todoId: todoId,
     userId: userId,
-    attachmentUrl: '',
+    attachmentUrl: `https://${process.env.IMAGES_S3_BUCKET}.s3.amazonaws.com/${todoId}`,
     dueDate: createTodoRequest.dueDate,
     createdAt: createdAt,
     name: createTodoRequest.name,

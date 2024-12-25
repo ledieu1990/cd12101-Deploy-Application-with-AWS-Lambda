@@ -3,7 +3,6 @@ import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb'
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import AWSXRay from 'aws-xray-sdk-core'
-import { v4 as uuidv4 } from 'uuid'
 import middy from '@middy/core'
 import cors from '@middy/http-cors'
 import httpErrorHandler from '@middy/http-error-handler'
@@ -42,24 +41,7 @@ export const handler = middy()
       }
     }
 
-    const imageId = uuidv4()
-
-    const url = await getUploadUrl(imageId)
-
-    await dynamoDbClient.update({
-      TableName: todosTable,
-      Key: {
-        userId: userId,
-        todoId: todoId
-      },
-      UpdateExpression: 'SET #attachmentUrl = :newAttachmentUrl',
-      ExpressionAttributeNames: {
-        '#attachmentUrl': 'attachmentUrl'
-      },
-      ExpressionAttributeValues: {
-        ':newAttachmentUrl': url
-      }
-    })
+    const url = await getUploadUrl(todoId)
 
     return {
       statusCode: 201,
@@ -89,10 +71,10 @@ async function todoIdExists(todoId, userId) {
   return !!result.Item
 }
 
-async function getUploadUrl(imageId) {
+async function getUploadUrl(id) {
   const command = new PutObjectCommand({
     Bucket: bucketName,
-    Key: imageId
+    Key: id
   })
   const url = await getSignedUrl(s3Client, command, {
     expiresIn: urlExpiration

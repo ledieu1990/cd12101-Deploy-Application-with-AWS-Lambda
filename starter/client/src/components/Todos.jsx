@@ -129,7 +129,7 @@ export function Todos() {
       try {
         const accessToken = await getAccessTokenSilently({
           audience: `https://dev-kyfvapcqi0tgugbw.us.auth0.com/api/v2/`,
-          scope: 'read:todos'
+          scope: 'read:todo'
         })
         console.log('Access token: ' + accessToken)
         const todos = await getTodos(accessToken)
